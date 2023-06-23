@@ -2,7 +2,7 @@ from rest_framework import serializers
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from .tasks import send_activation_mail
-from .models import MyUser
+from .models import MyUser, Profile
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -40,4 +40,8 @@ class LoginSerializer(serializers.Serializer):
         raise serializers.ValidationError('Incorrect email/phone number or password')
 
 
+class ProfileSerializer(serializers.ModelSerializer):
 
+    class Meta:
+        model = Profile
+        fields = "__all__"

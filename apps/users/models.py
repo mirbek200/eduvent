@@ -30,12 +30,13 @@ class CustomUserManager(BaseUserManager):
         )
         user.is_admin = True
         user.is_staff = True
+
         user.save(using=self._db)
         return user
 
 
 class MyUser(AbstractBaseUser, PermissionsMixin):
-    name = models.CharField(max_length=255, null=True, blank=True, unique=True)
+    name = models.CharField(max_length=255, null=True, blank=True)
     phone_number = models.CharField(max_length=255, null=False, blank=False, unique=True)
     email = models.EmailField('email address', unique=True)
     password = models.CharField(max_length=255, null=False, blank=False)
@@ -45,6 +46,7 @@ class MyUser(AbstractBaseUser, PermissionsMixin):
     is_superuser = models.BooleanField(default=False)
     is_admin = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
+    is_company = models.BooleanField(default=False, null=True, blank=True)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['phone_number']
@@ -70,3 +72,24 @@ class MyUser(AbstractBaseUser, PermissionsMixin):
             from_email=settings.EMAIL_HOST_USER,
             recipient_list=[self.email],
             fail_silently=False)
+
+
+class Profile(models.Model):
+    user = models.ForeignKey(MyUser, on_delete=models.CASCADE)
+    avatar = models.ImageField(upload_to='media/avatars/', null=False, blank=False)
+    name_of_company = models.CharField(max_length=255, null=True, blank=True)
+    description = models.CharField(max_length=500, null=True, blank=True)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
