@@ -5,34 +5,22 @@ from django.conf import settings
 
 class CustomUserManager(BaseUserManager):
 
-    def create_user(self, email, phone_number, password=None, name=None, is_company=None):
-        if not email:
-            raise ValueError('Users must have an email address')
-        if not phone_number:
-            raise ValueError('Users must have a phone number')
-
-        user = self.model(
-            email=self.normalize_email(email),
-            phone_number=phone_number,
-            name=name,
-            is_company=is_company
-        )
-
+    def _create(self, email, password, name, phone_number, **extra_fields):
+        email = self.normalize_email(email)
+        user = self.model(email=email, name=name, phone_number=phone_number, **extra_fields)
         user.set_password(password)
-        user.save(using=self._db)
+        user.save()
         return user
 
-    def create_superuser(self, email, phone_number, password):
-        user = self.create_user(
-            email=self.normalize_email(email),
-            phone_number=phone_number,
-            password=password,
-        )
-        user.is_admin = True
-        user.is_staff = True
+    def create_user(self, email, password, name, phone_number, **extra_fields):
+        extra_fields.setdefault('is_active', False)
+        extra_fields.setdefault('is_staff', False)
+        return self._create(email, password, name, phone_number, **extra_fields)
 
-        user.save(using=self._db)
-        return user
+    def create_superuser(self, email, password, name, phone_number, **extra_fields):
+        extra_fields.setdefault('is_active', True)
+        extra_fields.setdefault('is_staff', True)
+        return self._create(email, password, name, phone_number, **extra_fields)
 
 
 class MyUser(AbstractBaseUser, PermissionsMixin):
@@ -49,7 +37,7 @@ class MyUser(AbstractBaseUser, PermissionsMixin):
     is_company = models.BooleanField(default=False, null=True, blank=True)
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['phone_number']
+    REQUIRED_FIELDS = ['phone_number', 'name']
 
     objects = CustomUserManager()
 
@@ -75,21 +63,15 @@ class MyUser(AbstractBaseUser, PermissionsMixin):
 
 
 class Profile(models.Model):
-    user = models.ForeignKey(MyUser, on_delete=models.CASCADE)
-    avatar = models.ImageField(upload_to='media/avatars/', null=False, blank=False)
-    name_of_company = models.CharField(max_length=255, null=True, blank=True)
-    description = models.CharField(max_length=500, null=True, blank=True)
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    company_avatar = models.ImageField(upload_to='media/avatars/', null=False, blank=False)
+    company_name = models.CharField(max_length=255, null=True, blank=True)
+    company_description = models.CharField(max_length=500, null=True, blank=True)
 
-
-
-
-
-
-
-
-
-
-
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        self.user.is_company = True
+        self.user.save()
 
 
 

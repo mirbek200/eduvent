@@ -44,4 +44,4 @@ class ProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Profile
-        fields = "__all__"
+        fields = ['company_avatar', 'company_name', 'company_description']

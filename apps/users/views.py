@@ -1,10 +1,12 @@
 from django.http import Http404
 from rest_framework.views import APIView
 from rest_framework_simplejwt.views import TokenObtainPairView
-from rest_framework import status
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework import status, generics, permissions, exceptions
 from rest_framework.response import Response
 
 from .models import MyUser, Profile
+from .permissions import IsOwnerOrReadOnly
 from .serializers import UserSerializer, LoginSerializer, ProfileSerializer
 
 
@@ -47,36 +49,16 @@ class ActivationView(APIView):
             raise Http404
 
 
-class ProfileUpdateAPIView(APIView):
+class ProfileUpdateAPIView(generics.UpdateAPIView):
+    queryset = Profile.objects.all()
     serializer_class = ProfileSerializer
-    # permission_classes = [IsAdminUser]
-
-    def get_object(self, id):
-        try:
-            return Profile.objects.get(id=id)
-        except Profile.DoesNotExist:
-            raise Http404
-
-    def put(self, requests,id):
-        profile = self.get_object(id)
-        serializer = ProfileSerializer(profile, data=requests.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    permission_classes = [IsOwnerOrReadOnly]
+    authentication_classes = [JWTAuthentication]
 
 
-class ProfileDetailApiView(APIView):
-
-    def get_object(self, id):
-        try:
-            return Profile.objects.get(id=id)
-        except Profile.DoesNotExist:
-            raise Http404
-
-    def get(self, request, id):
-        profile = self.get_object(id)
-        serializers = ProfileSerializer(profile)
-        data = serializers.data
-        return Response(data)
+class ProfileDetailAPIView(generics.RetrieveAPIView):
+    queryset = Profile.objects.all()
+    serializer_class = ProfileSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
 
