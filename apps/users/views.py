@@ -7,7 +7,7 @@ from rest_framework.response import Response
 
 from .models import MyUser, Profile
 from .permissions import IsOwnerOrReadOnly
-from .serializers import UserSerializer, LoginSerializer, ProfileSerializer
+from .serializers import UserSerializer, LoginSerializer, ProfileSerializer, ProfileListSerializer
 
 
 class LoginView(TokenObtainPairView):
@@ -26,8 +26,8 @@ class RegistrationAPIView(APIView):
                 phone_number=request.data['phone_number'],
                 password=request.data['password'],
             )
-            user.create_activation_code()
-            user.send_activation_code()
+            # user.create_activation_code()
+            # user.send_activation_code()
             user.save()
             profile = Profile.objects.create(
                 user=user
@@ -37,16 +37,16 @@ class RegistrationAPIView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class ActivationView(APIView):
-    def get(self, request, activation_code):
-        try:
-            user = MyUser.objects.get(activation_code=activation_code)
-            user.is_active = True
-            user.activation_code = ''
-            user.save()
-            return Response('Вы успешно активировали аккаунт')
-        except MyUser.DoesNotExist:
-            raise Http404
+# class ActivationView(APIView):
+#     def get(self, request, activation_code):
+#         try:
+#             user = MyUser.objects.get(activation_code=activation_code)
+#             user.is_active = True
+#             user.activation_code = ''
+#             user.save()
+#             return Response('Вы успешно активировали аккаунт')
+#         except MyUser.DoesNotExist:
+#             raise Http404
 
 
 class ProfileUpdateAPIView(generics.UpdateAPIView):
@@ -61,4 +61,12 @@ class ProfileDetailAPIView(generics.RetrieveAPIView):
     serializer_class = ProfileSerializer
     permission_classes = [permissions.IsAuthenticated]
     authentication_classes = [JWTAuthentication]
+
+
+class ProfileListAPIView(generics.ListAPIView):
+    queryset = Profile.objects.all()
+    serializer_class = ProfileListSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+
 

@@ -13,7 +13,7 @@ class CustomUserManager(BaseUserManager):
         return user
 
     def create_user(self, email, password, name, phone_number, **extra_fields):
-        extra_fields.setdefault('is_active', False)
+        extra_fields.setdefault('is_active', True)
         extra_fields.setdefault('is_staff', False)
         return self._create(email, password, name, phone_number, **extra_fields)
 
@@ -29,8 +29,8 @@ class MyUser(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField('email address', unique=True)
     password = models.CharField(max_length=255, null=False, blank=False)
 
-    is_active = models.BooleanField(default=False)
-    activation_code = models.CharField(max_length=20, blank=True)
+    is_active = models.BooleanField(default=True)
+    # activation_code = models.CharField(max_length=20, blank=True)
     is_superuser = models.BooleanField(default=False)
     is_admin = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
@@ -44,22 +44,22 @@ class MyUser(AbstractBaseUser, PermissionsMixin):
     def __str__(self):
         return f'{self.email}'
 
-    def create_activation_code(self):
-        from django.utils.crypto import get_random_string
-        code = get_random_string(20)
-        self.activation_code = code
-        self.save()
-        return code
+    # def create_activation_code(self):
+    #     from django.utils.crypto import get_random_string
+    #     code = get_random_string(20)
+    #     self.activation_code = code
+    #     self.save()
+    #     return code
 
-    def send_activation_code(self):
-        from django.core.mail import send_mail
-        activation_link = f'http://127.0.0.1:9000/api/users/activation/{self.activation_code}'
-        send_mail(
-            'Account activation',
-            message=activation_link,
-            from_email=settings.EMAIL_HOST_USER,
-            recipient_list=[self.email],
-            fail_silently=False)
+    # def send_activation_code(self):
+    #     from django.core.mail import send_mail
+    #     activation_link = f'http://127.0.0.1:9000/api/users/activation/{self.activation_code}'
+    #     send_mail(
+    #         'Account activation',
+    #         message=activation_link,
+    #         from_email=settings.EMAIL_HOST_USER,
+    #         recipient_list=[self.email],
+    #         fail_silently=False)
 
 
 class Profile(models.Model):
