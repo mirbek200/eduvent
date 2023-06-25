@@ -70,7 +70,7 @@ def generate_access_token(user):
 class ProfileUpdateAPIView(generics.UpdateAPIView):
     queryset = Profile.objects.all()
     serializer_class = ProfileSerializer
-    permission_classes = [IsOwnerOrReadOnly]
+    permission_classes = [IsOwnerOrReadOnly, permissions.IsAuthenticated]
     authentication_classes = [JWTAuthentication]
 
 
