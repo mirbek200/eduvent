@@ -1,8 +1,11 @@
-from django.http import Http404
+from datetime import datetime, timedelta
+
+import jwt
+from django.conf import settings
 from rest_framework.views import APIView
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.authentication import JWTAuthentication
-from rest_framework import status, generics, permissions, exceptions
+from rest_framework import status, generics, permissions
 from rest_framework.response import Response
 
 from .models import MyUser, Profile
@@ -29,12 +32,27 @@ class RegistrationAPIView(APIView):
             # user.create_activation_code()
             # user.send_activation_code()
             user.save()
-            profile = Profile.objects.create(
-                user=user
-            )
+
+            profile = Profile.objects.create(user=user)
             profile.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+            access_token = generate_access_token(user)
+
+            response_data = {
+                'access_token': access_token,
+                'user': serializer.data,
+                'user_id': user.id
+            }
+            return Response(response_data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+def generate_access_token(user):
+    payload = {
+        'user_id': user.id,
+        'exp': datetime.utcnow() + timedelta(hours=3)
+    }
+    return jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
 
 
 # class ActivationView(APIView):
