@@ -20,6 +20,8 @@ class CustomUserManager(BaseUserManager):
     def create_superuser(self, email, password, name, phone_number, **extra_fields):
         extra_fields.setdefault('is_active', True)
         extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_admin', True)
+        extra_fields.setdefault('is_superuser', True)
         return self._create(email, password, name, phone_number, **extra_fields)
 
 
@@ -72,6 +74,4 @@ class Profile(models.Model):
         super().save(*args, **kwargs)
         self.user.is_company = True
         self.user.save()
-
-
 
