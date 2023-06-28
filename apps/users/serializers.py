@@ -32,7 +32,7 @@ class LoginSerializer(serializers.Serializer):
         if user and user.check_password(data['password']):
             refresh = RefreshToken.for_user(user)
             return {
-                'id': user.id,
+                'user_id': user.id,
                 'email': user.email,
                 'phone_number': user.phone_number,
                 'refresh': str(refresh),
