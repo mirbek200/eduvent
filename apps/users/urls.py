@@ -6,7 +6,8 @@ from .views import (LoginView,
                     # ActivationView,
                     ProfileUpdateAPIView,
                     ProfileDetailAPIView,
-                    ProfileListAPIView)
+                    ProfileListAPIView,
+                    )
 
 
 urlpatterns = [

@@ -66,12 +66,8 @@ class MyUser(AbstractBaseUser, PermissionsMixin):
 
 class Profile(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    company_avatar = models.ImageField(upload_to='media/avatars/', null=False, blank=False)
+    company_avatar = models.ImageField(upload_to='avatars/', null=False, blank=False)
     company_name = models.CharField(max_length=255, null=True, blank=True)
     company_description = models.CharField(max_length=500, null=True, blank=True)
 
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-        self.user.is_company = True
-        self.user.save()
 

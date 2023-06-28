@@ -2,10 +2,11 @@ from datetime import datetime, timedelta
 
 import jwt
 from django.conf import settings
+from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.authentication import JWTAuthentication
-from rest_framework import status, generics, permissions
+from rest_framework import status, generics, permissions, serializers
 from rest_framework.response import Response
 
 from .models import MyUser, Profile
@@ -35,7 +36,6 @@ class RegistrationAPIView(APIView):
 
             profile = Profile.objects.create(user=user)
             profile.save()
-
             access_token = generate_access_token(user)
 
             response_data = {
@@ -70,8 +70,17 @@ def generate_access_token(user):
 class ProfileUpdateAPIView(generics.UpdateAPIView):
     queryset = Profile.objects.all()
     serializer_class = ProfileSerializer
-    permission_classes = [IsOwnerOrReadOnly, permissions.IsAuthenticated]
+    # permission_classes = [IsOwnerOrReadOnly, permissions.IsAuthenticated]
     authentication_classes = [JWTAuthentication]
+
+    def update_user_is_company(self, user):
+        user.is_company = True
+        user.save()
+
+    def perform_update(self, serializer):
+        instance = serializer.save()
+        user = get_object_or_404(MyUser, pk=instance.user.pk)
+        self.update_user_is_company(user)
 
 
 class ProfileDetailAPIView(generics.RetrieveAPIView):

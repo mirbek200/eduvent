@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'corsheaders',
     'apps.admin_panel',
+    'apps.cards',
 ]
 
 MIDDLEWARE = [
