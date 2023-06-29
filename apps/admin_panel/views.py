@@ -6,6 +6,7 @@ from .serializers import CardSerializer
 class CardCategoriesListView(generics.ListAPIView):
     queryset = CardCategories.objects.all()
     serializer_class = CardSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
 
 class CardCategoriesCreateView(generics.CreateAPIView):
