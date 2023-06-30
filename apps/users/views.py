@@ -12,6 +12,8 @@ from rest_framework.response import Response
 from .models import MyUser, Profile
 from .permissions import IsOwnerOrReadOnly
 from .serializers import UserSerializer, LoginSerializer, ProfileSerializer, ProfileListSerializer
+from ..cards.models import Cards
+from ..cards.serializers import CardSerializers
 
 
 class LoginView(TokenObtainPairView):
@@ -83,11 +85,29 @@ class ProfileUpdateAPIView(generics.UpdateAPIView):
         self.update_user_is_company(user)
 
 
-class ProfileDetailAPIView(generics.RetrieveAPIView):
-    queryset = Profile.objects.all()
-    serializer_class = ProfileSerializer
+class ProfileDetailAPIView(APIView):
     permission_classes = [permissions.IsAuthenticated]
     authentication_classes = [JWTAuthentication]
+
+    def get(self, request, user_id):
+        try:
+            user = MyUser.objects.get(id=user_id)
+            profile = Profile.objects.get(user=user)
+            cards = Cards.objects.filter(user=user)
+
+            user_serializer = UserSerializer(user)
+            profile_serializer = ProfileSerializer(profile)
+            card_serializer = CardSerializers(cards, many=True)
+
+            data = {
+                'user': user_serializer.data,
+                'profile': profile_serializer.data,
+                'cards': card_serializer.data
+            }
+
+            return Response(data)
+        except MyUser.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
 
 
 class ProfileListAPIView(generics.ListAPIView):
