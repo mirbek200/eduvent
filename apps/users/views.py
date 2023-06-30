@@ -72,7 +72,7 @@ def generate_access_token(user):
 class ProfileUpdateAPIView(generics.UpdateAPIView):
     queryset = Profile.objects.all()
     serializer_class = ProfileSerializer
-    # permission_classes = [IsOwnerOrReadOnly, permissions.IsAuthenticated]
+    permission_classes = [IsOwnerOrReadOnly, permissions.IsAuthenticated]
     authentication_classes = [JWTAuthentication]
 
     def update_user_is_company(self, user):
@@ -85,23 +85,18 @@ class ProfileUpdateAPIView(generics.UpdateAPIView):
         self.update_user_is_company(user)
 
 
-class ProfileDetailAPIView(APIView):
+class ProfileCardListAPIView(APIView):
     permission_classes = [permissions.IsAuthenticated]
     authentication_classes = [JWTAuthentication]
 
     def get(self, request, user_id):
         try:
             user = MyUser.objects.get(id=user_id)
-            profile = Profile.objects.get(user=user)
             cards = Cards.objects.filter(user=user)
 
-            user_serializer = UserSerializer(user)
-            profile_serializer = ProfileSerializer(profile)
             card_serializer = CardSerializers(cards, many=True)
 
             data = {
-                'user': user_serializer.data,
-                'profile': profile_serializer.data,
                 'cards': card_serializer.data
             }
 
@@ -117,3 +112,8 @@ class ProfileListAPIView(generics.ListAPIView):
     authentication_classes = [JWTAuthentication]
 
 
+class ProfileDetailAPIView(generics.RetrieveAPIView):
+    queryset = Profile.objects.all()
+    serializer_class = ProfileListSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
