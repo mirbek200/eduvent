@@ -9,7 +9,7 @@ class Cards(models.Model):
     card_img = models.ImageField(upload_to='card_img/', null=False, blank=False)
     card_title = models.CharField(max_length=255, null=False, blank=False)
     card_description = models.CharField(max_length=255, null=False, blank=False)
-    card_about = models.CharField(max_length=255, null=False, blank=False)
+    card_about = models.CharField(max_length=5000, null=False, blank=False)
     instagram = models.URLField(null=True, blank=True)
     website = models.URLField(null=True, blank=True)
     phone_number1 = models.IntegerField(null=False, blank=False)
