@@ -1,6 +1,7 @@
 from django.urls import path
 from .views import (CardCategoriesListView, CardCategoriesCreateView, CardCategoriesUpdateView, CardCategoriesDeleteView,
-                    SubcategoriesListView, SubcategoriesCreateView, SubcategoriesUpdateView, SubcategoriesDeleteView)
+                    SubcategoriesListView, SubcategoriesCreateView, SubcategoriesUpdateView, SubcategoriesDeleteView,
+                    AdminCardDeleteView)
 
 
 urlpatterns = [
@@ -13,4 +14,6 @@ urlpatterns = [
     path('sub_categories_create/', SubcategoriesCreateView.as_view(), name='sub_categories_create'),
     path('sub_categories_update/<int:pk>/', SubcategoriesUpdateView.as_view(), name='sub_categories_update'),
     path('sub_categories_delete/<int:pk>/', SubcategoriesDeleteView.as_view(), name='sub_categories_delete'),
+
+    path('card_delete/<int:pk>/', AdminCardDeleteView.as_view(), name='card_delete'),
 ]

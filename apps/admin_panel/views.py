@@ -1,6 +1,8 @@
 from rest_framework import generics, permissions
 from .models import CardCategories, Subcategories
 from .serializers import CardCategoriesSerializer, SubcategoriesSerializer
+from ..cards.models import Cards
+from ..cards.serializers import CardSerializers
 
 
 class CardCategoriesListView(generics.ListAPIView):
@@ -51,6 +53,10 @@ class SubcategoriesDeleteView(generics.DestroyAPIView):
     permission_classes = [permissions.IsAdminUser]
 
 
+class AdminCardDeleteView(generics.DestroyAPIView):
+    queryset = Cards.objects.all()
+    serializer_class = CardSerializers
+    permission_classes = [permissions.IsAdminUser]
 
 
 
