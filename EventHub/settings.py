@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'apps.admin_panel',
     'apps.cards',
+    'apps.review'
 ]
 
 MIDDLEWARE = [
