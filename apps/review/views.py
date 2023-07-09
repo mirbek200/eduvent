@@ -1,15 +1,14 @@
+from django.http import Http404
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
-from .serializers import ReviewSerializer
+from rest_framework import status, permissions
 from .models import Review
-from ..users.permissions import IsOwnerOrReadOnly
-from rest_framework import permissions
-from .permissions import CanLeaveReview
+from .permissions import IsReviewOwner, IsUniqueReviewOwner
+from .serializers import ReviewSerializer
 
-class ReviewListAPIView(APIView):
-    serializer_class = ReviewSerializer
-    permission_classes = [CanLeaveReview]
+
+class ReviewAPIView(APIView):
+    permission_classes = [IsUniqueReviewOwner, permissions.IsAuthenticated]
 
     def get(self, request):
         reviews = Review.objects.all()
@@ -17,38 +16,29 @@ class ReviewListAPIView(APIView):
         return Response(serializer.data)
 
     def post(self, request):
-        reviews = Review.objects.all()
-        serializer2 = ReviewSerializer(reviews, many=True)
         serializer = ReviewSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer2.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class ReviewDetailAPIView(APIView):
-    serializer_class = ReviewSerializer
-    permission_classes = [IsOwnerOrReadOnly, permissions.IsAuthenticated]
+    permission_classes = [IsReviewOwner, permissions.IsAuthenticated]
 
-    def get_review(self, pk):
+    def get_object(self, pk):
         try:
             return Review.objects.get(pk=pk)
         except Review.DoesNotExist:
-            return None
+            raise Http404
 
     def get(self, request, pk):
-        review = self.get_review(pk)
-        if not review:
-            return Response({'error': 'Review not found'}, status=status.HTTP_404_NOT_FOUND)
-
+        review = self.get_object(pk)
         serializer = ReviewSerializer(review)
         return Response(serializer.data)
 
     def put(self, request, pk):
-        review = self.get_review(pk)
-        if not review:
-            return Response({'error': 'Review not found'}, status=status.HTTP_404_NOT_FOUND)
-
+        review = self.get_object(pk)
         serializer = ReviewSerializer(review, data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -56,9 +46,6 @@ class ReviewDetailAPIView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, pk):
-        review = self.get_review(pk)
-        if not review:
-            return Response({'error': 'Review not found'}, status=status.HTTP_404_NOT_FOUND)
-
+        review = self.get_object(pk)
         review.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)

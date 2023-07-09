@@ -1,13 +1,19 @@
 from rest_framework import permissions
+from .models import Review
 
-from apps.review.models import Review
+
+class IsReviewOwner(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj):
+        return obj.review_owner == request.user
 
 
-class CanLeaveReview(permissions.BasePermission):
+class IsUniqueReviewOwner(permissions.BasePermission):
+    message = 'You have already submitted a review for this user.'
+
     def has_permission(self, request, view):
-        if request.method == 'POST':
-            user_id = request.user.id
-            recipient_id = request.data.get('review_owner')
-            if recipient_id and Review.objects.filter(user_id=user_id, review_owner_id=recipient_id).exists():
-                return False
+        user = request.user
+        review_owner_id = request.data.get('review_owner')
+        if user and review_owner_id:
+            existing_reviews = Review.objects.filter(user=user, review_owner_id=review_owner_id)
+            return not existing_reviews.exists()
         return True
