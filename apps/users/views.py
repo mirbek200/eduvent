@@ -14,6 +14,8 @@ from .permissions import IsOwnerOrReadOnly
 from .serializers import UserSerializer, LoginSerializer, ProfileSerializer, ProfileListSerializer
 from ..cards.models import Cards
 from ..cards.serializers import CardSerializers
+from ..review.models import Review
+from ..review.serializers import ReviewSerializer
 
 
 class LoginView(TokenObtainPairView):
@@ -112,8 +114,24 @@ class ProfileListAPIView(generics.ListAPIView):
     authentication_classes = [JWTAuthentication]
 
 
-class ProfileDetailAPIView(generics.RetrieveAPIView):
-    queryset = Profile.objects.all()
-    serializer_class = ProfileListSerializer
+class ProfileDetailAPIView(APIView):
     permission_classes = [permissions.IsAuthenticated]
     authentication_classes = [JWTAuthentication]
+
+    def get(self, request, user_id):
+        try:
+            user = MyUser.objects.get(id=user_id)
+            profile = Profile.objects.filter(user=user)
+            review = Review.objects.filter(user=user)
+
+            review_serializer = ReviewSerializer(review, many=True)
+            profile_serializer = ProfileSerializer(profile, many=True)
+
+            data = {
+                'profile': profile_serializer.data,
+                'review': review_serializer.data
+            }
+
+            return Response(data)
+        except MyUser.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
