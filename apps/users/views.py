@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from pprint import pprint
 
 import jwt
 from django.conf import settings
@@ -126,12 +127,16 @@ class ProfileDetailAPIView(APIView):
 
             review_serializer = ReviewSerializer(review, many=True)
             profile_serializer = ProfileSerializer(profile, many=True)
+            all_rating = []
+            for i in review_serializer.data:
+                all_rating.append(i['rating'])
+            avg_rating = sum(all_rating) / len(all_rating)
 
             data = {
                 'profile': profile_serializer.data,
-                'review': review_serializer.data
+                'review': review_serializer.data,
+                'avg_rating': avg_rating
             }
-
             return Response(data)
         except MyUser.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
